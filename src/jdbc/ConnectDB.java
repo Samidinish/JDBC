@@ -1,21 +1,21 @@
 package jdbc;
 
-import java.beans.*;
+
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 public class ConnectDB {
+
 	Connection connect = null;
 	Statement statement = null;
 	PreparedStatement ps = null;
-	ResultSet rs = null;
+	ResultSet resultSet = null;
 	
 	public static Properties loadProperties() throws IOException{
 		Properties prop = new Properties();
@@ -36,6 +36,44 @@ public class ConnectDB {
 		System.out.println("Database is connected");
 	
 	}
-
+	
+	public List<String> readDataBase(String tableName, String columnName)throws Exception{
+		List<String> data = new ArrayList<String>();
+		
+		try {
+			connectToDatabase();
+			statement = connect.createStatement();
+			resultSet = statement.executeQuery("select * from " + tableName);
+			data = getResultSetData(resultSet, columnName);
+		} catch (ClassNotFoundException e) {
+			throw e;
+		}finally{
+			close();
+		}
+		return data;
+	}
+	private void close() {
+		try{
+			if(resultSet != null){
+				resultSet.close();
+			}
+			if(statement != null){
+				statement.close();
+			}
+			if(connect != null){
+				connect.close();
+			}
+		}catch(Exception e){
+			
+		}
+	}
+	private List<String> getResultSetData(ResultSet resultSet2,String columnName) throws SQLException {
+		List<String> dataList = new ArrayList<String>();
+		while(resultSet.next()){
+			String itemName = resultSet.getString(columnName);
+			dataList.add(itemName);
+		}
+		return dataList;
+	}
 
 }
